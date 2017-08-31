@@ -119,11 +119,11 @@ class YoutubeAPI:
         else:
             description = ''
 
-        description = '\n\n'.join([subtitle, abstract, description, ' '.join(self.ticket.people)])
+        description = '\n\n'.join([subtitle, abstract, description, 'Presenter: '+(' & '.join(self.ticket.people)]))
 
-        if self.ticket.media_enable == 'yes' and self.ticket.profile_media_enable == 'yes':
-            if self.ticket.media_url:
-                description = os.path.join(self.ticket.media_url, self.ticket.slug) + '\n\n' + description
+        #if self.ticket.media_enable == 'yes' and self.ticket.profile_media_enable == 'yes':
+        #    if self.ticket.media_url:
+        #        description = os.path.join(self.ticket.media_url, self.ticket.slug) + '\n\n' + description
 
         # if self.ticket.people:
         #     # prepend user names if only 1 or 2 speaker
