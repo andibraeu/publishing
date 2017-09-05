@@ -29,3 +29,8 @@ token = <user token>
 token_secret = <user secret>
 consumer_key = <consumer key>
 consumer_secret = <consumer secret>
+
+[TIB AV Portal]
+server = tib.flowcenter.de
+user = <ftp user name>
+password = <password>
