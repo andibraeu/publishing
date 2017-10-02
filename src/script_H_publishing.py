@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-#    Copyright (C) 2016  derpeter
+#    Copyright (C) 2017  derpeter
 #    derpeter@berlin.ccc.de
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -93,7 +93,7 @@ class Publisher:
         if not self.ticket:
             return
 
-        # todo this should in the publish function for better error handling
+        # todo this should be in the publish function for better error handling
         # voctoweb
         if self.ticket.profile_media_enable == 'yes' and self.ticket.media_enable == 'yes':
             api_url = self.config['voctoweb']['api_url']
@@ -106,6 +106,7 @@ class Publisher:
             self.yt.setup(self.ticket.youtube_token)
 
             # second YoutubeAPI instance for playlist management at youtube.com/mediacccde
+            # todo this code should not be specific for the media.ccc.de installation => make it general usable
             if 'playlist_token' in self.config['youtube'] and self.ticket.youtube_token != self.config['youtube']['playlist_token']:
                 self.yt_mediacccde = YoutubeAPI(self.config)
                 self.yt_mediacccde.setup(self.config['youtube']['playlist_token'])
@@ -175,10 +176,10 @@ class Publisher:
         if self.ticket.master:
             # if this is master ticket we need to check if we need to create an event on voctoweb
             logging.debug('this is a master ticket')
-            if self.ticket.voctoweb_event_id or self.ticket.recording_id:
-                logging.debug('ticket has a voctoweb_event_id or recording_id')
+            if self.ticket.voctoweb_event_id:
+                logging.debug('ticket has a voctoweb_event_id')
                 # ticket has an recording id. We assume the event exists on media
-                # todo ask media api if event exists
+                # todo: query voctoweb via public or private api, if event really exists
             else:
                 # ticket has no recording id therefore we create the event on voctoweb
                 r = self.vw.create_event()
@@ -193,7 +194,10 @@ class Publisher:
                             self.vw.upload_thumbs()
                         else:
                             logging.info("thumbs exist. skipping")
-                    self.c3tt.set_ticket_properties({'Voctoweb.EventId': r.json()['id']})
+                    try:
+                        self.c3tt.set_ticket_properties({'Voctoweb.EventId': r.json()['id']})
+                    except Exception as e_:
+                        raise PublisherException('failed to Voctoweb EventID to ticket') from e_
 
                 elif r.status_code == 422:
                     # If this happens tracker and voctoweb are out of sync regarding the recording id
@@ -264,11 +268,16 @@ class Publisher:
             except Exception as e_:
                 raise PublisherException('error uploading ' + out_path) from e_
 
+            self.recording_id = None
             try:
-                recording_id = self.vw.create_recording(out_filename, filename, self.ticket.folder, str(self.ticket.languages[key]), True, True)
-                self.c3tt.set_ticket_properties({'Voctoweb.RecordingId.' + key: recording_id})
+                self.recording_id = self.vw.create_recording(out_filename, filename, self.ticket.folder, str(self.ticket.languages[key]), True, True)
             except Exception as e_:
                 raise PublisherException('creating recording ' + out_path) from e_
+
+            try:
+                self.c3tt.set_ticket_properties({'Voctoweb.RecordingId.' + key: self.recording_id})
+            except Exception as e_:
+                raise PublisherException('failed to set RecordingId to ticket') from e_
 
     def _publish_to_youtube(self):
         """

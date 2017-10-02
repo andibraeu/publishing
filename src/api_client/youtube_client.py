@@ -98,10 +98,12 @@ class YoutubeAPI:
     def upload(self, ticket, file, lang):
         """
         Call the youtube API and push the file to youtube
+        :param ticket: ticket
         :param file: file to upload
         :param lang: language of the file
         :return:
         """
+        # todo figure out why ticket is passed here this isn't static
         # todo split up event creation and upload
         # todo change function name
         # todo add the license properly
@@ -135,7 +137,7 @@ class YoutubeAPI:
 
         if ticket.youtube_title_prefix:
             title = ticket.youtube_title_prefix + ' ' + title
-            logging.debug('adding ' + str(ticket.youtube_title_prefix) + ' as title prefix')
+            logging.debug('adding ' + str(ticket.youtube_title_prefix) + ' as title prefix'
 
         if ticket.youtube_title_suffix:
             title = title + ' ' + ticket.youtube_title_suffix
@@ -353,9 +355,11 @@ class YoutubeAPI:
     def _select_tags(self, ticket, lang=None):
         """
         Build the tag list
+        :param ticket: ticket object
         :param lang: if present the language will be added to the tags
         :return: Returns an array of tag strings
         """
+        # todo figure out why ticket object is passed here
         tags = []
 
         if ticket.track:
